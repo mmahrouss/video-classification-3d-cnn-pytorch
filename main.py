@@ -64,6 +64,6 @@ if __name__=="__main__":
     if os.path.exists('tmp'):
         subprocess.call('rm -rf tmp', shell=True)
 
-    opt.output=opt.output+'_From_'+opt.frm+'_to_'+opt.tto
+    opt.output=opt.output+'_From_'+str(opt.frm)+'_to_'+str(opt.tto)
     with open(opt.output, 'w') as f:
         json.dump(outputs, f)
