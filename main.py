@@ -32,7 +32,7 @@ if __name__=="__main__":
     with open(opt.input, 'r') as f:
         for row in f:
             input_files.append(row[:-1])
-
+    input_files=input_files[opt.from:opt.to]
     class_names = []
     with open('class_names_list') as f:
         for row in f:
@@ -64,5 +64,6 @@ if __name__=="__main__":
     if os.path.exists('tmp'):
         subprocess.call('rm -rf tmp', shell=True)
 
+    opt.output=opt.output+'_From_'+opt.from+'_to_'+opt.to
     with open(opt.output, 'w') as f:
         json.dump(outputs, f)
