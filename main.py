@@ -39,7 +39,7 @@ if __name__=="__main__":
             for row in f:
                 class_names.append(row[:-1])
 
-    ffmpeg_loglevel = 'quiet'
+    ffmpeg_loglevel = 'panic'
     if opt.verbose:
         ffmpeg_loglevel = 'info'
 
