@@ -83,7 +83,7 @@ def make_dataset(video_path, sample_duration):
     dataset = []
 
     n_frames = len(os.listdir(video_path))
-
+    print(n_frames)
     begin_t = 1
     end_t = n_frames
     sample = {
