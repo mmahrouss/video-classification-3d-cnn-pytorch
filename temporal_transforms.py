@@ -13,6 +13,8 @@ class LoopPadding(object):
             if len(out) >= self.size:
                 break
             out.append(index)
+        print(out)
+
 
         return out
 
