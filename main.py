@@ -52,7 +52,7 @@ if __name__=="__main__":
         if os.path.exists(video_path):
             print(video_path)
             subprocess.call('mkdir tmp', shell=True)
-            subprocess.call('ffmpeg -i {} tmp/image_%05d.jpg'.format(video_path),
+            subprocess.call('ffmpeg -i {} tmp/image_%05d.jpg -hide_banner -loglevel panic'.format(video_path),
                             shell=True)
 
             result = classify_video('tmp', input_file, class_names, model, opt)
