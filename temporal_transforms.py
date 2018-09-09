@@ -5,10 +5,10 @@ import math
 class LoopPadding(object):
     def __init__(self, size):
         self.size = size
-
+        print(self.size)
     def __call__(self, frame_indices):
         out = frame_indices
-
+        print(out)
         for index in out:
             if len(out) >= self.size:
                 break
