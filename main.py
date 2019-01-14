@@ -52,7 +52,7 @@ if __name__=="__main__":
     for i,input_file in enumerate(input_files):
         stop = timeit.default_timer()
         T=stop - start
-        print(' Video Number: ' +str(i) + 'Time taken: ' + str(T/60) + ' Minutes ' + str(T%60) ' Seconds ' )
+        print(' Video Number: ' +str(i) + 'Time taken: ' + str(T/60) + ' Minutes ' + str(T%60)  + ' Seconds ' )
         print( '\n Progress: ' + str(((i+1)*100)//len(input_files)) + '% \n')
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
