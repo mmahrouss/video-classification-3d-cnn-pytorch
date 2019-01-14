@@ -5,7 +5,7 @@ import subprocess
 import numpy as np
 import torch
 from torch import nn
-
+import timeit
 from opts import parse_opts
 from model import generate_model
 from mean import get_mean
@@ -32,7 +32,8 @@ if __name__=="__main__":
     with open(opt.input, 'r') as f:
         for row in f:
             input_files.append(row[:-1])
-    input_files=input_files[opt.frm:opt.tto]
+    #input_files=input_files[opt.frm:opt.tto]
+    print("Total Number of Files is :" + str(len(input_files))+'\n')
     class_names = []
     if opt.mode == 'score':
         with open('class_names_list') as f:
@@ -47,7 +48,12 @@ if __name__=="__main__":
         subprocess.call('rm -rf tmp', shell=True)
 
     outputs = []
-    for input_file in input_files:
+    start = timeit.default_timer()
+    for i,input_file in enumerate(input_files):
+        stop = timeit.default_timer()
+        T=stop - start
+        print(' Video Number: ' +str(i) + 'Time taken: ' + str(T/60) + ' Minutes ' + str(T%60) ' Seconds ' )
+        print( '\n Progress: ' + str(((i+1)*100)//len(input_files)) + '% \n')
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
             print(video_path)
