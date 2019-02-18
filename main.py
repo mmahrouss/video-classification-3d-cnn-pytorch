@@ -30,16 +30,14 @@ if __name__=="__main__":
 
     input_files = []
     with open(opt.input, 'r') as f:
-        for row in f:
-            input_files.append(row[:-1])
+        input_files = [row[:-1] for row in f]
     #input_files=input_files[opt.frm:opt.tto]
     print("Total Number of Files is :" + str(len(input_files))+'\n')
     class_names = []
     if opt.mode == 'score':
         with open('class_names_list') as f:
-            for row in f:
-                class_names.append(row[:-1])
-
+            class_names = [ row[:-1] for row in f ]
+            
     ffmpeg_loglevel = 'panic'
     if opt.verbose:
         ffmpeg_loglevel = 'info'
@@ -71,6 +69,6 @@ if __name__=="__main__":
     if os.path.exists('tmp'):
         subprocess.call('rm -rf tmp', shell=True)
 
-    opt.output=opt.output+'_From_'+str(opt.frm)+'_to_'+str(opt.tto)+'.json'
+    #opt.output=opt.output+'_From_'+str(opt.frm)+'_to_'+str(opt.tto)+'.json'
     with open(opt.output, 'w') as f:
         json.dump(outputs, f)
