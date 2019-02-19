@@ -30,8 +30,7 @@ if __name__=="__main__":
 
     input_files = []
     with open(opt.input, 'r') as f:
-        for row in f:
-            input_files.append(row[:-1])
+        input_files = [row[:-1] for row in f]
     #input_files=input_files[opt.frm:opt.tto]
     input_files=input_files[len(input_files)//2:]
     print("Total Number of Files is :" + str(len(input_files))+'\n')
