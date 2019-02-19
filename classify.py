@@ -27,7 +27,9 @@ def classify_video(video_dir, video_name, class_names, model, opt):
 
         video_outputs.append(outputs.cpu().data)
         video_segments.append(segments)
-
+    if len(video_outputs)==0:
+        print('Seq empty')
+        return -1
     video_outputs = torch.cat(video_outputs)
     video_segments = torch.cat(video_segments)
     results = {

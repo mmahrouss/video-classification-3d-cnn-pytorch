@@ -131,20 +131,37 @@ class Scale(object):
         Returns:
             PIL.Image: Rescaled image.
         """
-        if isinstance(self.size, int):
-            w, h = img.size
-            if (w <= h and w == self.size) or (h <= w and h == self.size):
-                return img
-            if w < h:
-                ow = self.size
-                oh = int(self.size * h / w)
-                return img.resize((ow, oh), self.interpolation)
+        if isinstance(img, np.ndarray):
+            if isinstance(self.size, int):
+                w, h = img.shape[0:2]
+                if (w <= h and w == self.size) or (h <= w and h == self.size):
+                    return img
+                if w < h:
+                    ow = self.size
+                    oh = int(self.size * h / w)
+                    return Image.fromarray(img).resize((ow, oh), self.interpolation)
+                else:
+                    oh = self.size
+                    ow = int(self.size * w / h)
+                    return Image.fromarray(img).resize((ow, oh), self.interpolation)
             else:
-                oh = self.size
-                ow = int(self.size * w / h)
-                return img.resize((ow, oh), self.interpolation)
+                return Image.fromarray(img).resize(self.size, self.interpolation)
         else:
-            return img.resize(self.size, self.interpolation)
+            if isinstance(self.size, int):
+                w, h = img.size
+                if (w <= h and w == self.size) or (h <= w and h == self.size):
+                    return img
+                if w < h:
+                    ow = self.size
+                    oh = int(self.size * h / w)
+                    return img.resize((ow, oh), self.interpolation)
+                else:
+                    oh = self.size
+                    ow = int(self.size * w / h)
+                    return img.resize((ow, oh), self.interpolation)
+            else:
+                return img.resize(self.size, self.interpolation)
+
 
 
 class CenterCrop(object):
@@ -168,6 +185,12 @@ class CenterCrop(object):
         Returns:
             PIL.Image: Cropped image.
         """
+        if isinstance(img, np.ndarray):
+            w, h = img.shape[0:2]
+            th, tw = self.size
+            x1 = int(round((w - tw) / 2.))
+            y1 = int(round((h - th) / 2.))
+            return Image.fromarray(img).crop((x1, y1, x1 + tw, y1 + th))
         w, h = img.size
         th, tw = self.size
         x1 = int(round((w - tw) / 2.))

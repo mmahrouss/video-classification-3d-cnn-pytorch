@@ -10,7 +10,7 @@ from opts import parse_opts
 from model import generate_model
 from mean import get_mean
 from classify import classify_video
-
+os.system('echo $$ > ~/myscript.pid')
 if __name__=="__main__":
     opt = parse_opts()
     opt.mean = get_mean()
@@ -33,44 +33,47 @@ if __name__=="__main__":
         for row in f:
             input_files.append(row[:-1])
     #input_files=input_files[opt.frm:opt.tto]
+    input_files=input_files[len(input_files)//2:]
     print("Total Number of Files is :" + str(len(input_files))+'\n')
     class_names = []
     if opt.mode == 'score':
         with open('class_names_list') as f:
             for row in f:
                 class_names.append(row[:-1])
+## I set it to panic
+#     ffmpeg_loglevel = 'panic'
+#     if opt.verbose:
+#         ffmpeg_loglevel = 'info'
 
-    ffmpeg_loglevel = 'panic'
-    if opt.verbose:
-        ffmpeg_loglevel = 'info'
-
-    if os.path.exists('tmp'):
-        subprocess.call('rm -rf tmp', shell=True)
+#     if os.path.exists('tmp'):
+#         subprocess.call('rm -rf tmp', shell=True)
 
     outputs = []
     start = timeit.default_timer()
     for i,input_file in enumerate(input_files):
         stop = timeit.default_timer()
         T=stop - start
-        print(' Video Number: ' +str(i) + 'Time taken: ' + str(T/60) + ' Minutes ' + str(T%60)  + ' Seconds ' )
+        print(' Video Number: ' +str(i) + '/'+str(len(input_files))+'Time taken: ' + str(T//60) + ' Minutes ' + str(T%60)  + ' Seconds ' )
         print( '\n Progress: ' + str(((i+1)*100)//len(input_files)) + '% \n')
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
             print(video_path)
-            subprocess.call('mkdir tmp', shell=True)
-            subprocess.call('ffmpeg -i {} tmp/image_%05d.jpg -hide_banner -loglevel panic'.format(video_path),
-                            shell=True)
+#             subprocess.call('mkdir tmp', shell=True)
+#             subprocess.call('ffmpeg -i {} tmp/image_%05d.jpg -hide_banner -loglevel panic'.format(video_path),
+#                             shell=True)
 
-            result = classify_video('tmp', input_file, class_names, model, opt)
-            outputs.append(result)
+            result = classify_video(video_path, input_file, class_names, model, opt)
+            if result!=-1:
+                outputs.append(result)
+            print(result['video'])
 
-            subprocess.call('rm -rf tmp', shell=True)
+#             subprocess.call('rm -rf tmp', shell=True)
         else:
             print('{} does not exist'.format(input_file))
 
-    if os.path.exists('tmp'):
-        subprocess.call('rm -rf tmp', shell=True)
+#     if os.path.exists('tmp'):
+#         subprocess.call('rm -rf tmp', shell=True)
 
-    opt.output=opt.output+'_From_'+str(opt.frm)+'_to_'+str(opt.tto)+'.json'
+    opt.output=opt.output+'.json'
     with open(opt.output, 'w') as f:
         json.dump(outputs, f)

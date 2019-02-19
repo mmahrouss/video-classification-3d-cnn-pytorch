@@ -5,6 +5,7 @@ import os
 import math
 import functools
 import copy
+import numpy as np
 
 
 def pil_loader(path):
@@ -31,15 +32,24 @@ def get_default_image_loader():
         return pil_loader
 
 
-def video_loader(video_dir_path, frame_indices, image_loader):
-    video = []
-    for i in frame_indices:
-        image_path = os.path.join(video_dir_path, 'image_{:05d}.jpg'.format(i))
-        if os.path.exists(image_path):
-            video.append(image_loader(image_path))
-        else:
-            return video
-
+def video_loader(video_path, frame_indices, image_loader):
+    import ffmpeg
+    import numpy as np
+    probe = ffmpeg.probe(video_path)
+    video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+    width = int(video_stream['width'])
+    height = int(video_stream['height'])
+    out, _ = (
+        ffmpeg
+        .input(video_path,loglevel='panic')
+        .output('pipe:', format='rawvideo', pix_fmt='rgb24')
+        .run(capture_stdout=True)
+    )
+    video = (
+        np
+        .frombuffer(out, np.uint8)
+        .reshape([-1, height, width, 3])
+    ) 
     return video
 
 
@@ -79,10 +89,10 @@ def get_video_names_and_annotations(data, subset):
     return video_names, annotations
 
 
-def make_dataset(video_path, sample_duration):
+def make_dataset(video_path, sample_duration,leng):
     dataset = []
 
-    n_frames = len(os.listdir(video_path))
+    n_frames = leng #len(os.listdir(video_path))
 
     begin_t = 1
     end_t = n_frames
@@ -101,16 +111,23 @@ def make_dataset(video_path, sample_duration):
 
     return dataset
 
+def get_numframes(video_path):
+    import ffmpeg
+    probe = ffmpeg.probe(video_path)
+    video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+    return int(video_stream['nb_frames'])
 
 class Video(data.Dataset):
     def __init__(self, video_path,
                  spatial_transform=None, temporal_transform=None,
                  sample_duration=16, get_loader=get_default_video_loader):
-        self.data = make_dataset(video_path, sample_duration)
+        #self.vid = get_vid(video_path)
+        self.data = make_dataset(video_path, sample_duration,get_numframes(video_path))
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
         self.loader = get_loader()
+        
 
     def __getitem__(self, index):
         """
@@ -125,9 +142,13 @@ class Video(data.Dataset):
         if self.temporal_transform is not None:
             frame_indices = self.temporal_transform(frame_indices)
         clip = self.loader(path, frame_indices)
+        #clip = self.vid[frame_indices[0]-1:frame_indices[-1]-1,:,:,:]
+        #print(type(clip))
         if self.spatial_transform is not None:
             clip = [self.spatial_transform(img) for img in clip]
+        #print(type(clip))
         clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
+        #print(clip.shape)
 
         target = self.data[index]['segment']
 
