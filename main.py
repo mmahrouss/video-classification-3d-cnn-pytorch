@@ -31,7 +31,6 @@ if __name__=="__main__":
     input_files = []
     with open(opt.input, 'r') as f:
         input_files = [row[:-1] for row in f]
-    #input_files=input_files[opt.frm:opt.tto]
     input_files=input_files[len(input_files)//2:]
     print("Total Number of Files is :" + str(len(input_files))+'\n')
     class_names = []
@@ -39,13 +38,6 @@ if __name__=="__main__":
         with open('class_names_list') as f:
             for row in f:
                 class_names.append(row[:-1])
-## I set it to panic
-#     ffmpeg_loglevel = 'panic'
-#     if opt.verbose:
-#         ffmpeg_loglevel = 'info'
-
-#     if os.path.exists('tmp'):
-#         subprocess.call('rm -rf tmp', shell=True)
 
     outputs = []
     start = timeit.default_timer()
@@ -57,21 +49,15 @@ if __name__=="__main__":
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
             print(video_path)
-#             subprocess.call('mkdir tmp', shell=True)
-#             subprocess.call('ffmpeg -i {} tmp/image_%05d.jpg -hide_banner -loglevel panic'.format(video_path),
-#                             shell=True)
 
             result = classify_video(video_path, input_file, class_names, model, opt)
             if result!=-1:
                 outputs.append(result)
-            print(result['video'])
+            else:
+                print("Warning Video Skipped")
 
-#             subprocess.call('rm -rf tmp', shell=True)
         else:
             print('{} does not exist'.format(input_file))
-
-#     if os.path.exists('tmp'):
-#         subprocess.call('rm -rf tmp', shell=True)
 
     opt.output=opt.output+'.json'
     with open(opt.output, 'w') as f:

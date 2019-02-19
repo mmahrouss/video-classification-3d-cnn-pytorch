@@ -103,12 +103,25 @@ def make_dataset(video_path, sample_duration,leng):
     }
 
     step = sample_duration
+    i=-1
     for i in range(1, (n_frames - sample_duration + 1), step):
         sample_i = copy.deepcopy(sample)
         sample_i['frame_indices'] = list(range(i, i + sample_duration))
         sample_i['segment'] = torch.IntTensor([i, i + sample_duration - 1])
         dataset.append(sample_i)
-
+    
+    if (i+sample_duration)<leng:
+        sample_i = copy.deepcopy(sample)
+        sample_i['frame_indices'] = list(range(i+sample_duration,leng+1))
+        sample_i['segment'] = torch.IntTensor([i+sample_duration, i+sample_duration*2])
+        dataset.append(sample_i)
+    
+    if i==-1:
+        i=1
+        sample_i = copy.deepcopy(sample)
+        sample_i['frame_indices'] = list(range(i, leng+1))
+        sample_i['segment'] = torch.IntTensor([i, leng])
+        dataset.append(sample_i)
     return dataset
 
 def get_numframes(video_path):
@@ -142,13 +155,9 @@ class Video(data.Dataset):
         if self.temporal_transform is not None:
             frame_indices = self.temporal_transform(frame_indices)
         clip = self.loader(path, frame_indices)
-        #clip = self.vid[frame_indices[0]-1:frame_indices[-1]-1,:,:,:]
-        #print(type(clip))
         if self.spatial_transform is not None:
             clip = [self.spatial_transform(img) for img in clip]
-        #print(type(clip))
         clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
-        #print(clip.shape)
 
         target = self.data[index]['segment']
 
