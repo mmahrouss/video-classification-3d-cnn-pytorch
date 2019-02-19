@@ -10,7 +10,7 @@ from opts import parse_opts
 from model import generate_model
 from mean import get_mean
 from classify import classify_video
-os.system('echo $$ > ~/myscript.pid')
+#os.system('echo $$ > ~/myscript.pid')
 if __name__=="__main__":
     opt = parse_opts()
     opt.mean = get_mean()
@@ -31,15 +31,16 @@ if __name__=="__main__":
     input_files = []
     with open(opt.input, 'r') as f:
         input_files = [row[:-1] for row in f]
-    input_files=input_files[len(input_files)//2:]
     print("Total Number of Files is :" + str(len(input_files))+'\n')
     class_names = []
     if opt.mode == 'score':
         with open('class_names_list') as f:
             for row in f:
                 class_names.append(row[:-1])
-
-    outputs = []
+    opt.output=opt.output+'.json'
+    with open(opt.output,'w') as f:
+        f.write('[')
+    first = True;
     start = timeit.default_timer()
     for i,input_file in enumerate(input_files):
         stop = timeit.default_timer()
@@ -52,13 +53,15 @@ if __name__=="__main__":
 
             result = classify_video(video_path, input_file, class_names, model, opt)
             if result!=-1:
-                outputs.append(result)
+                with open(opt.output,'a') as test:
+                    if not first:
+                        test.write(', ')
+                    first=False
+                    json.dump(result,test)
             else:
                 print("Warning Video Skipped")
 
         else:
             print('{} does not exist'.format(input_file))
-
-    opt.output=opt.output+'.json'
-    with open(opt.output, 'w') as f:
-        json.dump(outputs, f)
+    with open(opt.output, 'a') as f:
+        f.write(']')
