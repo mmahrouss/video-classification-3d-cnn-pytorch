@@ -10,7 +10,7 @@ from opts import parse_opts
 from model import generate_model
 from mean import get_mean
 from classify import classify_video
-import
+
 #os.system('echo $$ > ~/myscript.pid')
 if __name__=="__main__":
     opt = parse_opts()
@@ -51,8 +51,6 @@ if __name__=="__main__":
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
             print(video_path)
-            if video_path==:
-                import ipdb; ipdb.set_trace()
                 
             result = classify_video(video_path, input_file, class_names, model, opt)
             if result!=-1:
