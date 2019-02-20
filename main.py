@@ -10,6 +10,7 @@ from opts import parse_opts
 from model import generate_model
 from mean import get_mean
 from classify import classify_video
+import
 #os.system('echo $$ > ~/myscript.pid')
 if __name__=="__main__":
     opt = parse_opts()
@@ -45,23 +46,26 @@ if __name__=="__main__":
     for i,input_file in enumerate(input_files):
         stop = timeit.default_timer()
         T=stop - start
-        print(' Video Number: ' +str(i) + '/'+str(len(input_files))+'Time taken: ' + str(T//60) + ' Minutes ' + str(T%60)  + ' Seconds ' )
+        print(' Video Number: {}/{}Time taken: {} Minutes {} Seconds '.format(i,len(input_files),T//60,T%60) )
         print( '\n Progress: ' + str(((i+1)*100)//len(input_files)) + '% \n')
         video_path = os.path.join(opt.video_root, input_file)
         if os.path.exists(video_path):
             print(video_path)
-
+            if video_path==:
+                import ipdb; ipdb.set_trace()
+                
             result = classify_video(video_path, input_file, class_names, model, opt)
             if result!=-1:
-                with open(opt.output,'a') as test:
+                with open(opt.output,'a') as f:
                     if not first:
-                        test.write(', ')
+                        f.write(', ')
                     first=False
-                    json.dump(result,test)
+                    json.dump(result,f)
             else:
                 print("Warning Video Skipped")
 
         else:
             print('{} does not exist'.format(input_file))
-    with open(opt.output, 'a') as f:
+    print('done')
+    with open(opt.output,'a') as f:
         f.write(']')

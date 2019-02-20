@@ -32,7 +32,7 @@ def get_default_image_loader():
         return pil_loader
 
 
-def video_loader(video_path, frame_indices, image_loader):
+def video_loader(video_path, frame_indices):
     import ffmpeg
     import numpy as np
     probe = ffmpeg.probe(video_path)
@@ -54,7 +54,7 @@ def video_loader(video_path, frame_indices, image_loader):
 
 
 def get_default_video_loader():
-    image_loader = get_default_image_loader()
+    ##image_loader = get_default_image_loader()
     return functools.partial(video_loader, image_loader=image_loader)
 
 
@@ -113,7 +113,7 @@ def make_dataset(video_path, sample_duration,leng):
     if (i+sample_duration)<leng:
         sample_i = copy.deepcopy(sample)
         sample_i['frame_indices'] = list(range(i+sample_duration,leng+1))
-        sample_i['segment'] = torch.IntTensor([i+sample_duration, i+sample_duration*2])
+        sample_i['segment'] = torch.IntTensor([i+sample_duration, i+sample_duration*2-1])
         dataset.append(sample_i)
     
     if i==-1:
@@ -124,22 +124,36 @@ def make_dataset(video_path, sample_duration,leng):
         dataset.append(sample_i)
     return dataset
 
-def get_numframes(video_path):
+def get_numframes_and_video(video_path):
     import ffmpeg
     probe = ffmpeg.probe(video_path)
     video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-    return int(video_stream['nb_frames'])
+    width = int(video_stream['width'])
+    height = int(video_stream['height'])
+    out, _ = (
+        ffmpeg
+        .input(video_path,loglevel='panic')
+        .output('pipe:', format='rawvideo', pix_fmt='rgb24')
+        .run(capture_stdout=True)
+    )
+    video = (
+        np
+        .frombuffer(out, np.uint8)
+        .reshape([-1, height, width, 3])
+    ) 
+    return video, int(video_stream['nb_frames'])-1
 
 class Video(data.Dataset):
     def __init__(self, video_path,
                  spatial_transform=None, temporal_transform=None,
                  sample_duration=16, get_loader=get_default_video_loader):
-        #self.vid = get_vid(video_path)
-        self.data = make_dataset(video_path, sample_duration,get_numframes(video_path))
+        self.vid,n__frames = get_numframes_and_video(video_path)
+        self.data = make_dataset(video_path, sample_duration,n__frames)
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
-        self.loader = get_loader()
+        #self.loader = get_loader()
+        
         
 
     def __getitem__(self, index):
@@ -154,7 +168,8 @@ class Video(data.Dataset):
         frame_indices = self.data[index]['frame_indices']
         if self.temporal_transform is not None:
             frame_indices = self.temporal_transform(frame_indices)
-        clip = self.loader(path, frame_indices)
+        frame_shape = self.vid[0,:,:,:].shape
+        clip = np.concatenate(tuple([self.vid[i-1,:,:,:].reshape((1,*frame_shape)) for i in frame_indices]))
         if self.spatial_transform is not None:
             clip = [self.spatial_transform(img) for img in clip]
         clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
