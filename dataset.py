@@ -42,7 +42,7 @@ def video_loader(video_path, frame_indices):
     out, _ = (
         ffmpeg
         .input(video_path,loglevel='panic')
-        .output('pipe:', format='rawvideo', pix_fmt='rgb24')
+        .output('pipe:')#, format='rawvideo', pix_fmt='rgb24')
         .run(capture_stdout=True)
     )
     video = (
@@ -133,7 +133,7 @@ def get_numframes_and_video(video_path):
     out, _ = (
         ffmpeg
         .input(video_path,loglevel='panic')
-        .output('pipe:', format='rawvideo', pix_fmt='rgb24')
+        .output('pipe:')#, format='rawvideo', pix_fmt='rgb24')
         .run(capture_stdout=True)
     )
     video = (
